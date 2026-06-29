@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { convertTime } from './conversion'
+import { DateTime } from 'luxon'
+import { convertTime, formatTimezoneSearchHint } from './conversion'
 import { SOURCE_TIMEZONES } from '../data/sourceTimezones'
 import { searchTimezones, findTimezoneByIana, tzToSelection, TIMEZONES } from '../data/timezones'
 import type { DestSelection } from '../types'
@@ -25,6 +26,76 @@ describe('source timezone dropdown', () => {
   it('only references IANA values present in the full timezone dataset', () => {
     const knownIana = new Set(TIMEZONES.map((tz) => tz.iana))
     expect(SOURCE_TIMEZONES.every((tz) => knownIana.has(tz.iana))).toBe(true)
+  })
+})
+
+// ─── Timezone abbreviation search ───────────────────────────────────────────
+
+describe('timezone abbreviation search', () => {
+  const abbreviationCases = [
+    ['UTC', 'London', 'Europe/London'],
+    ['GMT', 'London', 'Europe/London'],
+    ['BST', 'London', 'Europe/London'],
+    ['EST', 'New York', 'America/New_York'],
+    ['EDT', 'New York', 'America/New_York'],
+    ['CST', 'Chicago', 'America/Chicago'],
+    ['CDT', 'Chicago', 'America/Chicago'],
+    ['MST', 'Denver', 'America/Denver'],
+    ['MDT', 'Denver', 'America/Denver'],
+    ['PST', 'Los Angeles', 'America/Los_Angeles'],
+    ['PDT', 'Los Angeles', 'America/Los_Angeles'],
+    ['CET', 'Paris', 'Europe/Paris'],
+    ['CEST', 'Paris', 'Europe/Paris'],
+    ['EET', 'Bucharest', 'Europe/Bucharest'],
+    ['EEST', 'Bucharest', 'Europe/Bucharest'],
+    ['GST', 'Dubai', 'Asia/Dubai'],
+    ['AST', 'Riyadh', 'Asia/Riyadh'],
+    ['IST', 'Mumbai', 'Asia/Kolkata'],
+    ['SGT', 'Singapore', 'Asia/Singapore'],
+    ['HKT', 'Hong Kong', 'Asia/Hong_Kong'],
+    ['JST', 'Tokyo', 'Asia/Tokyo'],
+    ['KST', 'Seoul', 'Asia/Seoul'],
+    ['AEST', 'Sydney', 'Australia/Sydney'],
+    ['AEDT', 'Sydney', 'Australia/Sydney'],
+    ['NZST', 'Auckland', 'Pacific/Auckland'],
+    ['NZDT', 'Auckland', 'Pacific/Auckland'],
+  ] as const
+
+  it.each(abbreviationCases)('%s resolves to %s', (abbr, city, iana) => {
+    const [match] = searchTimezones(abbr)
+    expect(match).toMatchObject({ city, iana, isAlias: false })
+  })
+
+  it('normalises abbreviation case and surrounding whitespace', () => {
+    const lower = searchTimezones('mdt')[0]
+    const upper = searchTimezones('MDT')[0]
+    const padded = searchTimezones(' MDT ')[0]
+
+    expect(lower).toMatchObject({ city: 'Denver', iana: 'America/Denver' })
+    expect(upper).toEqual(lower)
+    expect(padded).toEqual(lower)
+  })
+
+  it('formats search hints with the active abbreviation for the reference date', () => {
+    const summer = DateTime.fromISO('2026-06-30T12:00:00Z')
+    const winter = DateTime.fromISO('2026-01-15T12:00:00Z')
+
+    expect(formatTimezoneSearchHint('Europe/London', summer)).toBe('BST • Europe/London')
+    expect(formatTimezoneSearchHint('Europe/London', winter)).toBe('GMT • Europe/London')
+    expect(formatTimezoneSearchHint('America/New_York', summer)).toBe('EDT • America/New_York')
+    expect(formatTimezoneSearchHint('America/New_York', winter)).toBe('EST • America/New_York')
+    expect(formatTimezoneSearchHint('Asia/Tokyo', summer)).toBe('JST • Asia/Tokyo')
+  })
+
+  it('shows the active timezone abbreviation rather than the searched abbreviation text', () => {
+    const estSearch = searchTimezones('EST')[0]
+    const edtSearch = searchTimezones('EDT')[0]
+    const activeNewYorkHint = formatTimezoneSearchHint('America/New_York')
+
+    expect(estSearch).toMatchObject({ city: 'New York', iana: 'America/New_York' })
+    expect(edtSearch).toMatchObject({ city: 'New York', iana: 'America/New_York' })
+    expect(estSearch.hint).toBe(activeNewYorkHint)
+    expect(edtSearch.hint).toBe(activeNewYorkHint)
   })
 })
 

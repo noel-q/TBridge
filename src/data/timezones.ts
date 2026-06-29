@@ -1,4 +1,6 @@
 import type { TimezoneOption, SearchResult, DestSelection } from '../types'
+import { formatTimezoneSearchHint } from '../utils/conversion'
+import { ABBREVIATION_INDEX } from './abbreviationIndex'
 import { CITY_INDEX, normalizeSearchText, scoreCityEntry } from './cityIndex'
 
 export const TIMEZONES: TimezoneOption[] = [
@@ -1654,12 +1656,29 @@ export function searchTimezones(query: string): SearchResult[] {
       city: tz.city,
       country: tz.country,
       isAlias: false,
+      hint: formatTimezoneSearchHint(tz.iana),
     }))
   }
 
+  const abbreviationMatches = ABBREVIATION_INDEX
+    .filter((entry) => normalizeSearchText(entry.abbreviation) === q)
+    .map((entry): SearchResult | null => {
+      const tz = findTimezoneByIana(entry.iana)
+      if (!tz) return null
+
+      return {
+        iana: tz.iana,
+        city: tz.city,
+        country: tz.country,
+        isAlias: false,
+        hint: formatTimezoneSearchHint(tz.iana),
+      }
+    })
+    .filter((result): result is SearchResult => result !== null)
+
   type Scored = { score: number; priority: number; result: SearchResult }
   const scored: Scored[] = []
-  const seen = new Set<string>()
+  const seen = new Set(abbreviationMatches.map((result) => `${result.iana}:${result.city}`))
 
   for (const entry of CITY_INDEX) {
     const score = scoreCityEntry(entry, q)
@@ -1679,9 +1698,7 @@ export function searchTimezones(query: string): SearchResult[] {
       country: entry.country,
       isAlias: !isPrimary,
       primaryCity: isPrimary ? undefined : primaryCity,
-      hint: isPrimary
-        ? undefined
-        : `Uses ${primaryCity ?? entry.timezoneIana} timezone · ${entry.timezoneIana}`,
+      hint: formatTimezoneSearchHint(entry.timezoneIana),
     }
 
     scored.push({ score, priority: entry.priority ?? 0, result })
@@ -1692,7 +1709,7 @@ export function searchTimezones(query: string): SearchResult[] {
     a.score !== b.score ? a.score - b.score : b.priority - a.priority,
   )
 
-  return scored.map((s) => s.result)
+  return [...abbreviationMatches, ...scored.map((s) => s.result)]
 }
 
 /** Resolve a DestSelection from a SearchResult */

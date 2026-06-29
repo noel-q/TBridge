@@ -109,7 +109,7 @@ export function DestinationSelector({ state, onChange }: Props) {
                   <span className="dropdown-country">{result.country}</span>
                 </div>
                 <div className="dropdown-hint">
-                  {result.isAlias && result.hint ? result.hint : result.iana}
+                  {result.hint ?? result.iana}
                 </div>
               </li>
             ))}

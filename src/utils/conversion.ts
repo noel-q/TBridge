@@ -355,6 +355,15 @@ function resolveAbbreviation(dt: DateTime, iana: string): string {
   return ABBR_FALLBACK[key] ?? (name ?? dt.toFormat('ZZ'))
 }
 
+export function getTimezoneAbbreviation(iana: string, reference: DateTime = DateTime.now()): string {
+  const zoned = reference.setZone(iana)
+  return resolveAbbreviation(zoned, iana)
+}
+
+export function formatTimezoneSearchHint(iana: string, reference: DateTime = DateTime.now()): string {
+  return `${getTimezoneAbbreviation(iana, reference)} • ${iana}`
+}
+
 /**
  * Convert a date + time in a source IANA timezone to one or more destinations.
  * Destinations are DestSelection objects — supports both primary cities and aliases.
