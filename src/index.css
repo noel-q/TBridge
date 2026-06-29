@@ -61,7 +61,7 @@
 
   input[type="date"],
   input[type="time"] {
-    color-scheme: dark;
+    color-scheme: inherit;
   }
 }
 
@@ -148,18 +148,6 @@
     box-shadow: 0 0 0 3px var(--focus-ring);
   }
 
-  .select-input {
-    @apply appearance-none pr-9;
-    background-image:
-      linear-gradient(45deg, transparent 50%, #a3a3a3 50%),
-      linear-gradient(135deg, #a3a3a3 50%, transparent 50%);
-    background-position:
-      calc(100% - 17px) 50%,
-      calc(100% - 12px) 50%;
-    background-size: 5px 5px, 5px 5px;
-    background-repeat: no-repeat;
-  }
-
   .chip-group {
     @apply mb-3 flex flex-wrap gap-1.5;
   }
@@ -210,6 +198,10 @@
     background: var(--surface-muted);
   }
 
+  .dropdown-item--active {
+    background: var(--surface-muted);
+  }
+
   .dropdown-row-main {
     @apply flex items-baseline justify-between gap-3;
   }
@@ -229,9 +221,44 @@
     color: var(--app-text-muted);
   }
 
+  .dropdown-iana {
+    @apply mt-0.5 truncate text-[11px];
+    color: var(--app-text-subtle);
+  }
+
   .dropdown-empty {
     color: var(--app-text-muted);
     font-size: 0.875rem;
+  }
+
+  .source-combobox {
+    @apply relative;
+  }
+
+  .source-dropdown {
+    @apply max-h-80;
+  }
+
+  .dropdown-group {
+    @apply list-none;
+  }
+
+  .dropdown-group-label {
+    @apply sticky top-0 z-10 border-b px-3 py-1.5 text-[10px] font-semibold;
+    background: var(--surface-elevated);
+    border-color: var(--border);
+    color: var(--app-text-subtle);
+  }
+
+  .source-option {
+    @apply pl-4;
+  }
+
+  .source-selected-label {
+    @apply shrink-0 rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none;
+    background: var(--badge-bg);
+    border-color: var(--border);
+    color: var(--app-text-muted);
   }
 
   .results-section {

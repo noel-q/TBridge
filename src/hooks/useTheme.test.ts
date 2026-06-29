@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   THEME_STORAGE_KEY,
+  applyResolvedTheme,
   persistThemeMode,
   readStoredTheme,
   resolveThemeMode,
@@ -55,5 +56,35 @@ describe('theme preferences', () => {
 
     expect(storage.values.has(THEME_STORAGE_KEY)).toBe(false)
     expect(readStoredTheme(storage)).toBe('system')
+  })
+
+  it('applies and removes the root dark class for the resolved theme', () => {
+    const classes = new Set<string>()
+    const attributes = new Map<string, string>()
+    const root = {
+      classList: {
+        toggle: (name: string, force?: boolean) => {
+          if (force) {
+            classes.add(name)
+          } else {
+            classes.delete(name)
+          }
+          return classes.has(name)
+        },
+      },
+      setAttribute: (name: string, value: string) => {
+        attributes.set(name, value)
+      },
+    }
+
+    applyResolvedTheme('dark', root)
+
+    expect(classes.has('dark')).toBe(true)
+    expect(attributes.get('data-theme')).toBe('dark')
+
+    applyResolvedTheme('light', root)
+
+    expect(classes.has('dark')).toBe(false)
+    expect(attributes.get('data-theme')).toBe('light')
   })
 })

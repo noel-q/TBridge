@@ -1,4 +1,4 @@
-import { SOURCE_TIMEZONES } from '../data/sourceTimezones'
+import { SourceTimezoneCombobox } from './SourceTimezoneCombobox'
 import type { AppState } from '../types'
 
 type Props = {
@@ -33,18 +33,10 @@ export function DateTimeInput({ state, onChange }: Props) {
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="source-tz" className="input-sublabel">Timezone</label>
-          <select
-            id="source-tz"
+          <SourceTimezoneCombobox
             value={state.sourceIana}
-            onChange={(e) => onChange({ sourceIana: e.target.value })}
-            className="input select-input"
-          >
-            {SOURCE_TIMEZONES.map((tz) => (
-              <option key={tz.iana} value={tz.iana}>
-                {tz.city}
-              </option>
-            ))}
-          </select>
+            onChange={(sourceIana) => onChange({ sourceIana })}
+          />
         </div>
       </div>
     </div>
