@@ -1,4 +1,10 @@
-# TBridge
+<div align="center">
+  <img src="./assets/tbridge-banner-1280x320.png" alt="TBridge — qhedroid" width="100%" />
+</div>
+
+<br>
+
+<img src="https://img.shields.io/badge/noel--quadri-apps--tools-0F6E56?style=flat-square&labelColor=0B3D2E" alt="apps-tools" />
 
 TBridge is a small frontend-only timezone converter for comparing one source date and time across multiple destination cities. It uses IANA timezone IDs and Luxon for DST-aware conversion, with an offline city index for fast local search.
 
@@ -85,3 +91,9 @@ The static build is written to `dist/`.
 - Screenshots for the README
 - Optional repeatable city index build pipeline
 - Broader manual browser and mobile QA
+
+---
+
+<div align="center">
+  <sub>qhedroid · part of the <a href="https://www.linkedin.com/in/noelquadri2001">Noel Quadri</a> portfolio</sub>
+</div>
