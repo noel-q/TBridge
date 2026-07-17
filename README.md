@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/tbridge-banner-1280x320.png" alt="TBridge — qhedroid" width="100%" />
+  <img src="./assets/tbridge-banner-1280x320.png" alt="TBridge — noel-q" width="100%" />
 </div>
 
 <br>
@@ -87,13 +87,18 @@ The static build is written to `dist/`.
 
 ## Roadmap
 
-- RC1 QA and release polish
-- Screenshots for the README
+v1.0.0 is released and [live on Vercel](https://tbridge-pied.vercel.app). Post-release:
+
 - Optional repeatable city index build pipeline
 - Broader manual browser and mobile QA
+
+## Case study
+
+This project is documented with honest readiness signals (tests, docs, CI)
+at [noel-q.dev](https://noel-q.dev/projects/timebridge).
 
 ---
 
 <div align="center">
-  <sub>qhedroid · part of the <a href="https://www.linkedin.com/in/noelquadri2001">Noel Quadri</a> portfolio</sub>
+  <sub>noel-q · part of the <a href="https://www.linkedin.com/in/noelquadri2001">Noel Quadri</a> portfolio</sub>
 </div>
