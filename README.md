@@ -87,7 +87,7 @@ The static build is written to `dist/`.
 
 ## Roadmap
 
-v1.0.0 is released and [live on Vercel](https://tbridge-pied.vercel.app). Post-release:
+v1.0.0 is released and [live](https://tbridge.noel-q.dev). Post-release:
 
 - Optional repeatable city index build pipeline
 - Broader manual browser and mobile QA
