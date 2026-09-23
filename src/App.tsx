@@ -72,7 +72,7 @@ export default function App() {
       <footer className={`${CONTAINER} footer-line`}>
         <img src="/assets/tbridge-mark.svg" alt="" className="footer-mark footer-mark--light" />
         <img src="/assets/tbridge-mark-dark.svg" alt="" className="footer-mark footer-mark--dark" />
-        <span>TBridge v1.1</span>
+        <span>TBridge v{__APP_VERSION__}</span>
         <span className="footer-dot">·</span>
         <span>Offline city index · IANA timezones · DST-aware</span>
       </footer>
