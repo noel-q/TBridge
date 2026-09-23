@@ -419,6 +419,17 @@
     margin-top: 4px;
   }
 
+  .time-notice {
+    border: 1px solid var(--qh-day-prev-bdr);
+    border-radius: 8px;
+    background: var(--qh-day-prev-bg);
+    color: var(--qh-day-prev-fg);
+    font-size: 13px;
+    line-height: 1.45;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+  }
+
   .result-row {
     display: flex;
     align-items: center;

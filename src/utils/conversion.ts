@@ -377,6 +377,60 @@ function parseWallClock(date: string, time: string): WallClock | null {
   return { year: +d[1], month: +d[2], day: +d[3], hour: +t[1], minute: +t[2] }
 }
 
+export type SourceTimeNotice = {
+  kind: 'invalid' | 'skipped' | 'repeated'
+  message: string
+}
+
+/**
+ * Explains input the converter cannot take at face value:
+ *  - invalid:  date/time is empty or not a real calendar date/time
+ *  - skipped:  the wall-clock time does not exist (clocks jump forward), so it is shifted
+ *  - repeated: the wall-clock time happens twice (clocks go back), so the first one is used
+ * Returns null when the time maps to exactly one instant.
+ */
+export function getSourceTimeNotice(
+  date: string,
+  time: string,
+  sourceIana: string,
+): SourceTimeNotice | null {
+  const wall = parseWallClock(date, time)
+  const zoned = wall && DateTime.fromObject(wall, { zone: sourceIana })
+  if (!wall || !zoned || !zoned.isValid) {
+    return { kind: 'invalid', message: 'Enter a valid date and time to see the conversion.' }
+  }
+
+  // Find every instant whose local wall clock equals the requested one, using the
+  // offsets in force around that day. One match is normal; none is a gap; two is an overlap.
+  const localAsUtc = DateTime.fromObject(wall, { zone: 'utc' }).toMillis()
+  const offsets = new Set([zoned.minus({ days: 1 }).offset, zoned.offset, zoned.plus({ days: 1 }).offset])
+  const instants = new Set<number>()
+  for (const offset of offsets) {
+    const candidate = DateTime.fromMillis(localAsUtc - offset * 60_000, { zone: sourceIana })
+    if (
+      candidate.year === wall.year && candidate.month === wall.month && candidate.day === wall.day &&
+      candidate.hour === wall.hour && candidate.minute === wall.minute
+    ) {
+      instants.add(candidate.toMillis())
+    }
+  }
+
+  const requested = time.slice(0, 5)
+  if (instants.size === 0) {
+    return {
+      kind: 'skipped',
+      message: `${requested} does not exist in ${sourceIana} on ${date} (clocks skip forward). Showing ${zoned.toFormat('HH:mm')} instead.`,
+    }
+  }
+  if (instants.size > 1) {
+    return {
+      kind: 'repeated',
+      message: `${requested} happens twice in ${sourceIana} on ${date} (clocks go back). Showing the first occurrence, ${resolveAbbreviation(zoned, sourceIana)}.`,
+    }
+  }
+  return null
+}
+
 /**
  * Whole calendar days from one local date to another, ignoring time of day and zone.
  * Diffing the two zones' midnight instants instead is wrong: their offset gap is a
