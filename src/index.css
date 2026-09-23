@@ -709,6 +709,21 @@
     opacity: 0.45;
   }
 
+  .footer-note {
+    flex-basis: 100%;
+    margin-top: 2px;
+  }
+
+  .footer-note a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .footer-note a:hover {
+    color: var(--qh-text-2);
+  }
+
   @media (max-width: 620px) {
     .header-inner {
       min-height: 40px;

@@ -74,7 +74,14 @@ export default function App() {
         <img src="/assets/tbridge-mark-dark.svg" alt="" className="footer-mark footer-mark--dark" />
         <span>TBridge v{__APP_VERSION__}</span>
         <span className="footer-dot">·</span>
-        <span>Offline city index · IANA timezones · DST-aware</span>
+        <span>Local city index · IANA timezones · DST-aware</span>
+        <span className="footer-note">
+          No accounts, analytics or cookies. Everything runs in your browser; only your theme choice is
+          saved on this device.{' '}
+          <a href="https://github.com/noel-q/TBridge" target="_blank" rel="noopener noreferrer">
+            Source on GitHub
+          </a>
+        </span>
       </footer>
     </div>
   )
