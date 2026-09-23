@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from 'react'
+import { DateTime } from 'luxon'
 import type { AppState, DestSelection } from '../types'
 import { findTimezoneByIana, tzToSelection } from '../data/timezones'
 import { CITY_ALIASES } from '../data/cityAliases'
 import { CITY_INDEX } from '../data/cityIndex'
 
-const DEFAULT_STATE: AppState = {
-  date: '2026-06-30',
+const DEFAULT_STATE: Omit<AppState, 'date'> = {
   time: '17:00',
   sourceIana: 'Europe/London',
   destSelections: [
@@ -70,11 +70,17 @@ function decodeSelection(segment: string): DestSelection | null {
   return tz ? tzToSelection(tz) : null
 }
 
+/** Today's date in the given zone, falling back to the local date for an unknown zone. */
+function todayIn(iana: string): string {
+  const zoned = DateTime.now().setZone(iana)
+  return (zoned.isValid ? zoned : DateTime.now()).toISODate() ?? ''
+}
+
 function parseUrlState(): AppState {
   const params = new URLSearchParams(window.location.search)
-  const date = params.get('date') ?? DEFAULT_STATE.date
-  const time = params.get('time') ?? DEFAULT_STATE.time
   const sourceIana = params.get('src') ?? DEFAULT_STATE.sourceIana
+  const date = params.get('date') ?? todayIn(sourceIana)
+  const time = params.get('time') ?? DEFAULT_STATE.time
   const dstParam = params.get('dst')
   const destSelections: DestSelection[] = dstParam
     ? dstParam.split(',').map(decodeSelection).filter((s): s is DestSelection => s !== null)

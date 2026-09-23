@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { convertTime } from '../utils/conversion'
+import { convertTime, getSourceTimeNotice } from '../utils/conversion'
 import { findTimezoneByIana, tzToSelection } from '../data/timezones'
 import { ResultCard } from './ResultCard'
 import type { AppState } from '../types'
@@ -18,17 +18,35 @@ export function ResultsList({ state }: Props) {
     return result ?? null
   }, [state.date, state.time, state.sourceIana, state.is24h, sourceSel])
 
+  const notice = useMemo(
+    () => getSourceTimeNotice(state.date, state.time, state.sourceIana),
+    [state.date, state.time, state.sourceIana],
+  )
+
   const destResults = useMemo(
     () => convertTime(state.date, state.time, state.sourceIana, state.destSelections, state.is24h),
     [state.date, state.time, state.sourceIana, state.destSelections, state.is24h],
   )
 
-  if (!sourceResult) {
+  if (!sourceSel) {
     return <p className="empty-state-copy">Please select a valid source timezone.</p>
+  }
+
+  if (!sourceResult) {
+    return (
+      <p className="empty-state-copy" role="status">
+        {notice?.message ?? 'Enter a valid date and time to see the conversion.'}
+      </p>
+    )
   }
 
   return (
     <div className="results-list">
+      {notice && (
+        <p className="time-notice" role="status">
+          {notice.message}
+        </p>
+      )}
       <ResultCard result={sourceResult} isSource />
       {destResults.map((result, i) => (
         <ResultCard key={`${result.city}|${result.iana}|${i}`} result={result} />

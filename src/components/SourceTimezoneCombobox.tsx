@@ -4,6 +4,7 @@ import {
   type SourceTimezoneDetail,
   searchSourceTimezones,
 } from '../data/sourceTimezoneSearch'
+import { findTimezoneByIana } from '../data/timezones'
 
 type Props = {
   value: string
@@ -23,8 +24,11 @@ function groupOptions(options: SourceTimezoneDetail[]) {
 }
 
 export function SourceTimezoneCombobox({ value, onChange }: Props) {
-  const selected = SOURCE_TIMEZONE_DETAILS.find((option) => option.iana === value) ?? SOURCE_TIMEZONE_DETAILS[0]
-  const [query, setQuery] = useState(selected.city)
+  const selectedCity =
+    SOURCE_TIMEZONE_DETAILS.find((option) => option.iana === value)?.city ??
+    findTimezoneByIana(value)?.city ??
+    SOURCE_TIMEZONE_DETAILS[0].city
+  const [query, setQuery] = useState(selectedCity)
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -36,8 +40,8 @@ export function SourceTimezoneCombobox({ value, onChange }: Props) {
   const activeOption = results[activeIndex]
 
   useEffect(() => {
-    if (!open) setQuery(selected.city)
-  }, [open, selected.city])
+    if (!open) setQuery(selectedCity)
+  }, [open, selectedCity])
 
   useEffect(() => {
     setActiveIndex(0)

@@ -6,7 +6,7 @@
 
 <img src="https://img.shields.io/badge/noel--quadri-apps--tools-0F6E56?style=flat-square&labelColor=0B3D2E" alt="apps-tools" />
 
-TBridge is a small frontend-only timezone converter for comparing one source date and time across multiple destination cities. It uses IANA timezone IDs and Luxon for DST-aware conversion, with an offline city index for fast local search.
+TBridge is a small frontend-only timezone converter for comparing one source date and time across multiple destination cities. It uses IANA timezone IDs and Luxon for DST-aware conversion, with a bundled local city index for fast search.
 
 ![TBridge timezone converter preview](docs/assets/tbridge-screenshot.png)
 
@@ -26,7 +26,9 @@ The app is designed as a focused productivity utility: choose a source date, tim
 - 12h and 24h display modes
 - Copy results as plain text
 - Shareable URL state
-- Responsive dark UI
+- Notices for times that fall in a DST gap or overlap
+- Responsive light, dark and system themes
+- Self-hosted fonts, no analytics, no cookies, no third-party requests
 
 ## Tech Stack
 
@@ -96,6 +98,10 @@ v1.0.0 is released and [live](https://tbridge.noel-q.dev). Post-release:
 
 This project is documented with honest readiness signals (tests, docs, CI)
 at [noel-q.dev](https://noel-q.dev/projects/timebridge).
+
+## License
+
+[MIT](./LICENSE)
 
 ---
 

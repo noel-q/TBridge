@@ -9,7 +9,7 @@
     min-width: 320px;
     background: var(--qh-bg);
     color: var(--qh-text);
-    font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    font-family: 'Geist Variable', 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
       'Segoe UI', sans-serif;
     font-size: 14px;
   }
@@ -419,6 +419,17 @@
     margin-top: 4px;
   }
 
+  .time-notice {
+    border: 1px solid var(--qh-day-prev-bdr);
+    border-radius: 8px;
+    background: var(--qh-day-prev-bg);
+    color: var(--qh-day-prev-fg);
+    font-size: 13px;
+    line-height: 1.45;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+  }
+
   .result-row {
     display: flex;
     align-items: center;
@@ -500,7 +511,7 @@
 
   .result-time-display {
     color: var(--qh-text);
-    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    font-family: 'Geist Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
       'Liberation Mono', monospace;
     font-size: 34px;
     font-variant-numeric: tabular-nums;
@@ -659,7 +670,13 @@
     font-weight: 500;
   }
 
-  .btn-secondary:hover {
+  .btn-primary:disabled,
+  .btn-secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
     border-color: var(--qh-border-2);
     background: var(--qh-btn-hov);
     color: var(--qh-text);
@@ -690,6 +707,21 @@
 
   .footer-dot {
     opacity: 0.45;
+  }
+
+  .footer-note {
+    flex-basis: 100%;
+    margin-top: 2px;
+  }
+
+  .footer-note a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .footer-note a:hover {
+    color: var(--qh-text-2);
   }
 
   @media (max-width: 620px) {

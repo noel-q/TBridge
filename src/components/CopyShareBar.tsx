@@ -8,7 +8,7 @@ type Props = {
   shareUrl: string
 }
 
-type CopyState = 'idle' | 'copied-text' | 'copied-url'
+type CopyState = 'idle' | 'copied-text' | 'copied-url' | 'failed-text' | 'failed-url'
 
 export function CopyShareBar({ state, shareUrl }: Props) {
   const [copyState, setCopyState] = useState<CopyState>('idle')
@@ -22,27 +22,36 @@ export function CopyShareBar({ state, shareUrl }: Props) {
     return results.map(formatResultLine).join('\n')
   }
 
-  async function copyText() {
-    await navigator.clipboard.writeText(buildCopyText())
-    setCopyState('copied-text')
-    setTimeout(() => setCopyState('idle'), 2000)
-  }
-
-  async function copyUrl() {
-    await navigator.clipboard.writeText(`${window.location.origin}${shareUrl}`)
-    setCopyState('copied-url')
+  async function copy(text: string, done: CopyState, failed: CopyState) {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopyState(done)
+    } catch {
+      setCopyState(failed)
+    }
     setTimeout(() => setCopyState('idle'), 2000)
   }
 
   if (state.destSelections.length === 0) return null
 
+  const copyText = buildCopyText()
+
   return (
     <div className="action-bar">
-      <button type="button" onClick={copyText} className="btn-secondary">
-        {copyState === 'copied-text' ? '✓ Copied' : 'Copy results'}
+      <button
+        type="button"
+        onClick={() => copy(copyText, 'copied-text', 'failed-text')}
+        disabled={copyText === ''}
+        className="btn-secondary"
+      >
+        {copyState === 'copied-text' ? '✓ Copied' : copyState === 'failed-text' ? 'Copy failed' : 'Copy results'}
       </button>
-      <button type="button" onClick={copyUrl} className="btn-primary">
-        {copyState === 'copied-url' ? '✓ Copied link' : 'Share link'}
+      <button
+        type="button"
+        onClick={() => copy(`${window.location.origin}${shareUrl}`, 'copied-url', 'failed-url')}
+        className="btn-primary"
+      >
+        {copyState === 'copied-url' ? '✓ Copied link' : copyState === 'failed-url' ? 'Copy failed' : 'Share link'}
       </button>
     </div>
   )
