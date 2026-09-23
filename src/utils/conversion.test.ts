@@ -169,6 +169,75 @@ describe('convertTime — previous day', () => {
   })
 })
 
+// ─── Day offset across large zone gaps ───────────────────────────────────────
+
+describe('convertTime — day offset', () => {
+  const dayOffset = (date: string, time: string, from: string, to: string) =>
+    convertTime(date, time, from, [sel(to)], true)[0].dayOffset
+
+  it.each([
+    ['New York 17:00 → Tokyo is the next day', '2026-01-15', '17:00', 'America/New_York', 'Asia/Tokyo', 1],
+    ['New York 23:30 → Tokyo is the next day', '2026-01-15', '23:30', 'America/New_York', 'Asia/Tokyo', 1],
+    ['New York 09:00 → Tokyo is the same day', '2026-01-15', '09:00', 'America/New_York', 'Asia/Tokyo', 0],
+    ['New York 00:30 → Tokyo is the same day', '2026-01-15', '00:30', 'America/New_York', 'Asia/Tokyo', 0],
+    ['Tokyo 03:00 → New York is the previous day', '2026-01-15', '03:00', 'Asia/Tokyo', 'America/New_York', -1],
+    ['Tokyo 23:30 → New York is the same day', '2026-01-15', '23:30', 'Asia/Tokyo', 'America/New_York', 0],
+    ['Los Angeles 20:00 → Sydney is the next day', '2026-06-30', '20:00', 'America/Los_Angeles', 'Australia/Sydney', 1],
+  ])('%s', (_label, date, time, from, to, expected) => {
+    expect(dayOffset(date, time, from, to)).toBe(expected)
+  })
+
+  it('matches the displayed calendar date for every pair of popular zones', () => {
+    const zones = [
+      'Europe/London', 'America/New_York', 'America/Los_Angeles', 'Asia/Tokyo',
+      'Asia/Kolkata', 'Australia/Sydney', 'Europe/Paris', 'Pacific/Auckland', 'Pacific/Honolulu',
+    ]
+    const dates = ['2026-01-15', '2026-03-08', '2026-06-30', '2026-10-25', '2026-11-01']
+    const times = ['00:30', '06:00', '09:00', '12:00', '17:00', '23:30']
+    const fmt = 'EEE d MMM yyyy'
+
+    for (const from of zones) {
+      for (const to of zones) {
+        for (const date of dates) {
+          for (const time of times) {
+            const [result] = convertTime(date, time, from, [sel(to)], true)
+            const shown = DateTime.fromFormat(result.displayDate, fmt, { zone: 'utc' })
+            const source = DateTime.fromISO(date, { zone: 'utc' })
+            const expected = shown.diff(source, 'days').days
+            expect(result.dayOffset, `${from} ${date} ${time} → ${to}`).toBe(expected)
+          }
+        }
+      }
+    }
+  })
+})
+
+// ─── Invalid and empty input ─────────────────────────────────────────────────
+
+describe('convertTime — invalid input', () => {
+  const ny = [sel('America/New_York')]
+
+  it.each([
+    ['cleared date', '', '17:00'],
+    ['cleared time', '2026-06-30', ''],
+    ['impossible calendar date', '2026-02-31', '17:00'],
+    ['out-of-range time', '2026-06-30', '25:00'],
+    ['non-ISO date', '30/06/2026', '17:00'],
+    ['garbage time', '2026-06-30', 'noon'],
+  ])('returns no results for %s', (_label, date, time) => {
+    expect(convertTime(date, time, 'Europe/London', ny, true)).toEqual([])
+  })
+
+  it('accepts a time with seconds and uses the hour and minute', () => {
+    const [result] = convertTime('2026-06-30', '17:00:30', 'Europe/London', ny, true)
+    expect(result.displayTime).toBe('12:00')
+  })
+
+  it('returns no results for an unknown source timezone', () => {
+    expect(convertTime('2026-06-30', '17:00', 'Not/AZone', ny, true)).toEqual([])
+  })
+})
+
 // ─── City alias resolution ────────────────────────────────────────────────────
 
 describe('city alias search — UK cities', () => {

@@ -659,7 +659,13 @@
     font-weight: 500;
   }
 
-  .btn-secondary:hover {
+  .btn-primary:disabled,
+  .btn-secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
     border-color: var(--qh-border-2);
     background: var(--qh-btn-hov);
     color: var(--qh-text);

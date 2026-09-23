@@ -364,10 +364,34 @@ export function formatTimezoneSearchHint(iana: string, reference: DateTime = Dat
   return `${getTimezoneAbbreviation(iana, reference)} • ${iana}`
 }
 
+const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
+const TIME_PATTERN = /^(\d{2}):(\d{2})(?::\d{2})?$/
+
+type WallClock = { year: number; month: number; day: number; hour: number; minute: number }
+
+/** Strictly parse "YYYY-MM-DD" + "HH:MM". Empty or malformed input is rejected, never defaulted. */
+function parseWallClock(date: string, time: string): WallClock | null {
+  const d = DATE_PATTERN.exec(date)
+  const t = TIME_PATTERN.exec(time)
+  if (!d || !t) return null
+  return { year: +d[1], month: +d[2], day: +d[3], hour: +t[1], minute: +t[2] }
+}
+
+/**
+ * Whole calendar days from one local date to another, ignoring time of day and zone.
+ * Diffing the two zones' midnight instants instead is wrong: their offset gap is a
+ * fraction of a day, so rounding flips the answer for pairs such as New York and Tokyo.
+ */
+function calendarDayDiff(from: DateTime, to: DateTime): number {
+  const utcDay = (dt: DateTime) => DateTime.utc(dt.year, dt.month, dt.day)
+  return Math.round(utcDay(to).diff(utcDay(from), 'days').days)
+}
+
 /**
  * Convert a date + time in a source IANA timezone to one or more destinations.
  * Destinations are DestSelection objects — supports both primary cities and aliases.
  * All DST handling is delegated to Luxon. No manual offset arithmetic.
+ * Returns an empty list when the date or time is empty or invalid.
  */
 export function convertTime(
   date: string,      // ISO date string: "2026-06-30"
@@ -376,22 +400,17 @@ export function convertTime(
   destinations: DestSelection[],
   is24h: boolean,
 ): ConversionResult[] {
-  const [year, month, day] = date.split('-').map(Number)
-  const [hour, minute] = time.split(':').map(Number)
+  const wall = parseWallClock(date, time)
+  if (!wall) return []
 
-  const sourceDateTime = DateTime.fromObject(
-    { year, month, day, hour, minute },
-    { zone: sourceIana },
-  )
+  const sourceDateTime = DateTime.fromObject(wall, { zone: sourceIana })
 
   if (!sourceDateTime.isValid) return []
 
   return destinations.map((dest) => {
     const converted = sourceDateTime.setZone(dest.iana)
 
-    const dayDiff = converted.startOf('day').diff(sourceDateTime.startOf('day'), 'days').days
-    const clampedOffset = Math.max(-1, Math.min(1, Math.round(dayDiff)))
-    const dayOffset = clampedOffset as -1 | 0 | 1
+    const dayOffset = Math.max(-1, Math.min(1, calendarDayDiff(sourceDateTime, converted))) as -1 | 0 | 1
 
     const displayDate = converted.toFormat('EEE d MMM yyyy')
     const displayTime = is24h

@@ -23,8 +23,16 @@ export function ResultsList({ state }: Props) {
     [state.date, state.time, state.sourceIana, state.destSelections, state.is24h],
   )
 
-  if (!sourceResult) {
+  if (!sourceSel) {
     return <p className="empty-state-copy">Please select a valid source timezone.</p>
+  }
+
+  if (!sourceResult) {
+    return (
+      <p className="empty-state-copy" role="status">
+        Enter a valid date and time to see the conversion.
+      </p>
+    )
   }
 
   return (
