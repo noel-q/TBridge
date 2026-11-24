@@ -283,6 +283,7 @@ describe('getSourceTimeNotice', () => {
 
   it('names the first occurrence for a repeated time', () => {
     expect(getSourceTimeNotice('2026-11-01', '01:30', 'America/New_York')?.message).toContain('EDT')
+    expect(getSourceTimeNotice('2026-10-25', '01:30', 'Europe/London')?.message).toContain('BST')
   })
 
   it.each([
@@ -300,6 +301,24 @@ describe('convertTime — DST gap', () => {
   it('converts a skipped time as the shifted time', () => {
     const [result] = convertTime('2026-03-08', '02:30', 'America/New_York', [sel('Europe/London')], true)
     expect(result.displayTime).toBe('07:30')
+  })
+})
+
+describe('convertTime — DST overlap', () => {
+  // The notice says the first occurrence is shown, so the conversion must use it too.
+  it.each([
+    ['New York 01:30 EDT', '2026-11-01', '01:30', 'America/New_York', 'Europe/London', '05:30'],
+    ['London 01:30 BST', '2026-10-25', '01:30', 'Europe/London', 'Asia/Tokyo', '09:30'],
+    ['Sydney 02:30 AEDT', '2026-04-05', '02:30', 'Australia/Sydney', 'Europe/London', '16:30'],
+  ])('converts the first occurrence: %s', (_label, date, time, src, dest, expected) => {
+    const [result] = convertTime(date, time, src, [sel(dest)], true)
+    expect(result.displayTime).toBe(expected)
+  })
+
+  it('shows the first occurrence for the source row itself', () => {
+    const [result] = convertTime('2026-11-01', '01:30', 'America/New_York', [sel('America/New_York')], true)
+    expect(result.displayTime).toBe('01:30')
+    expect(result.abbreviation).toBe('EDT')
   })
 })
 

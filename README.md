@@ -28,6 +28,7 @@ The app is designed as a focused productivity utility: choose a source date, tim
 - Shareable URL state
 - Notices for times that fall in a DST gap or overlap
 - Responsive light, dark and system themes
+- Keyboard shortcuts with visible key hints: `/` add a city, `⌫` remove the last one, `H` 12 or 24 hour, `T` theme, `C` copy results, `S` share link, arrow keys and Return in both searches
 - Self-hosted fonts, no analytics, no cookies, no third-party requests
 
 ## Tech Stack
@@ -37,7 +38,9 @@ The app is designed as a focused productivity utility: choose a source date, tim
 | Vite | Build tool and dev server |
 | React | UI framework |
 | TypeScript | Strict application types |
-| Tailwind CSS | Styling |
+| Quiet | Noel's design system: generated tokens in `src/styles/quiet-tokens.css`, styles in `src/styles/app.css` |
+| Instrument Sans, JetBrains Mono | Self-hosted fonts via Fontsource |
+| Phosphor Icons | Icons (Regular) |
 | Luxon | Timezone conversion and formatting |
 | Vitest | Unit tests |
 
@@ -51,6 +54,7 @@ TBridge is a static browser app.
 - `src/utils/conversion.ts` handles Luxon conversion and formatting.
 - `src/hooks/useUrlState.ts` serializes app state into the URL.
 - `src/components/` contains the UI.
+- `src/styles/quiet-tokens.css` is generated from Quiet's `tokens.json` by `node tools/gen-quiet-tokens.mjs` (accent: tide). Do not edit it by hand; regenerate when Quiet changes. Design rules: the quiet-design skill.
 
 All timezone calculations happen in the browser. The app does not manually calculate offsets.
 
@@ -93,6 +97,10 @@ v1.0.0 is released and [live](https://tbridge.noel-q.dev). Post-release:
 
 - Optional repeatable city index build pipeline
 - Broader manual browser and mobile QA
+
+## Signature
+
+TBridge hides one small signature, as every Quiet product does. Hover, focus or click the version in the footer: a small ember square settles into place and the line "Made quietly by Noel." appears (announced politely to screen readers). The browser console prints one friendly line for developers. It uses no network or storage, respects Reduce Motion and never appears in copied results or shared links. Code: `src/components/Signature.tsx`. Keep it through rewrites.
 
 ## Case study
 

@@ -4,84 +4,80 @@ import { DestinationSelector } from './components/DestinationSelector'
 import { ResultsList } from './components/ResultsList'
 import { CopyShareBar } from './components/CopyShareBar'
 import { ThemeToggle } from './components/ThemeToggle'
+import { Segmented } from './components/Segmented'
+import { Signature } from './components/Signature'
+import { BridgeMark } from './components/Icons'
 import { useTheme } from './hooks/useTheme'
+import { useShortcuts } from './hooks/useShortcuts'
 
-const CONTAINER = 'page-container'
+type Clock = '24h' | '12h'
+
+const CLOCK_OPTIONS: { value: Clock; label: string }[] = [
+  { value: '24h', label: '24h' },
+  { value: '12h', label: '12h' },
+]
 
 export default function App() {
   const [state, updateState, shareUrl] = useUrlState()
   const theme = useTheme()
 
-  return (
-    <div className="min-h-screen app-shell">
-      {/* Header */}
-      <header className="app-header">
-        <div className={`${CONTAINER} header-inner`}>
-          <div className="brand-lockup" aria-label="TBridge">
-            <span className="brand-badge" aria-hidden="true">
-              <img
-                src="/assets/tbridge-mark.svg"
-                alt=""
-                className="brand-logo-img brand-logo-img--light"
-              />
-              <img
-                src="/assets/tbridge-mark-dark.svg"
-                alt=""
-                className="brand-logo-img brand-logo-img--dark"
-              />
-            </span>
-            <span className="brand-name">TBridge</span>
-          </div>
+  useShortcuts({ h: () => updateState({ is24h: !state.is24h }) })
 
-          <div className="header-controls">
-            <ThemeToggle
-              mode={theme.mode}
-              resolvedTheme={theme.resolvedTheme}
-              onChange={theme.setMode}
-            />
-            <button
-              type="button"
-              onClick={() => updateState({ is24h: !state.is24h })}
-              className="format-toggle"
-              aria-pressed={!state.is24h}
-              aria-label={`Switch to ${state.is24h ? '12-hour' : '24-hour'} format`}
-            >
-              <span className={`format-option ${state.is24h ? 'format-option--active' : ''}`}>
-                24h
-              </span>
-              <span className={`format-option ${!state.is24h ? 'format-option--active' : ''}`}>
-                12h
-              </span>
-            </button>
-          </div>
+  return (
+    <div className="tb-page">
+      <header className="tb-header">
+        <span className="tb-brand">
+          <BridgeMark />
+          TBridge
+        </span>
+
+        <div className="tb-header__controls">
+          <Segmented
+            label="Clock"
+            shortcut="H"
+            options={CLOCK_OPTIONS}
+            value={state.is24h ? '24h' : '12h'}
+            onChange={(clock) => updateState({ is24h: clock === '24h' })}
+          />
+          <ThemeToggle mode={theme.mode} onChange={theme.setMode} />
         </div>
       </header>
 
-      {/* Input panel */}
-      <main className={`${CONTAINER} main-stack`}>
+      <div className="tb-intro">
+        <h1 className="tb-title">Convert a time</h1>
+        <p className="tb-lede">
+          Pick a date, time and place, then add the cities you want to compare. Daylight saving is handled for you.
+        </p>
+      </div>
+
+      <main className="tb-main">
         <DateTimeInput state={state} onChange={updateState} />
-        <div className="section-divider" />
         <DestinationSelector state={state} onChange={updateState} />
 
-        <section className="results-section" aria-label="Converted times">
+        <section className="tb-section" aria-label="Converted times">
           <ResultsList state={state} />
           <CopyShareBar state={state} shareUrl={shareUrl} />
         </section>
       </main>
 
-      <footer className={`${CONTAINER} footer-line`}>
-        <img src="/assets/tbridge-mark.svg" alt="" className="footer-mark footer-mark--light" />
-        <img src="/assets/tbridge-mark-dark.svg" alt="" className="footer-mark footer-mark--dark" />
-        <span>TBridge v{__APP_VERSION__}</span>
-        <span className="footer-dot">·</span>
-        <span>Local city index · IANA timezones · DST-aware</span>
-        <span className="footer-note">
-          No accounts, analytics or cookies. Everything runs in your browser; only your theme choice is
-          saved on this device.{' '}
+      <footer className="tb-footer">
+        <div className="q-hints" aria-label="Keyboard shortcuts">
+          <span className="q-hint"><span className="q-kbd">/</span> Add a city</span>
+          <span className="q-hint"><span className="q-kbd">⌫</span> Remove last city</span>
+          <span className="q-hint"><span className="q-kbd">H</span> 12 or 24 hour</span>
+          <span className="q-hint"><span className="q-kbd">T</span> Theme</span>
+        </div>
+        <p className="tb-about">
+          <Signature version={__APP_VERSION__} />
+        </p>
+        <p className="tb-about">
+          <span>
+            Runs in your browser. No accounts, analytics or cookies; only your theme choice is saved on this device.
+          </span>
           <a href="https://github.com/noel-q/TBridge" target="_blank" rel="noopener noreferrer">
             Source on GitHub
           </a>
-        </span>
+        </p>
       </footer>
     </div>
   )

@@ -3,38 +3,38 @@ import type { ConversionResult } from '../types'
 type Props = {
   result: ConversionResult
   isSource?: boolean
+  enter?: boolean
 }
 
-export function ResultCard({ result, isSource = false }: Props) {
+export function ResultCard({ result, isSource = false, enter = false }: Props) {
   const dayOffset = result.dayOffset
+  const showZone = isSource || (result.isAlias && result.primaryCity)
 
   return (
-    <div className={`result-row ${isSource ? 'result-row--source' : ''}`}>
-      <div className="result-meta">
-        <div className="result-title-line">
-          <span className="result-city-name">{result.city}</span>
-          {isSource && <span className="source-badge">source</span>}
-        </div>
-        <span className="result-sub">
+    <li className={`tb-row${enter ? ' tb-row--enter' : ''}`}>
+      <div className="tb-row__place">
+        <span className="tb-row__city">
+          {result.city}
+          {isSource && <span className="q-badge">From</span>}
+        </span>
+        <span className="tb-row__meta">
           {result.country}
-          {result.isAlias && result.primaryCity && (
-            <> · <span>{result.iana}</span></>
+          {showZone && (
+            <> · <span className="q-mono">{result.iana}</span></>
           )}
         </span>
       </div>
 
-      <div className="result-time-block">
-        <div className="result-time-line">
+      <div className="tb-row__when">
+        <span className="tb-row__time">
           {dayOffset !== 0 && (
-            <span className={`day-badge ${dayOffset === 1 ? 'day-badge--next' : 'day-badge--prev'}`}>
-              {dayOffset === 1 ? '+1' : '−1'}
-            </span>
+            <span className="q-badge">{dayOffset === 1 ? 'Next day' : 'Previous day'}</span>
           )}
-          <span className="result-time-display">{result.displayTime}</span>
-          <span className="result-abbr">{result.abbreviation}</span>
-        </div>
-        <span className="result-date-display">{result.displayDate}</span>
+          <span className="tb-row__clock">{result.displayTime}</span>
+          <span className="tb-row__abbr">{result.abbreviation}</span>
+        </span>
+        <span className="tb-row__date">{result.displayDate}</span>
       </div>
-    </div>
+    </li>
   )
 }

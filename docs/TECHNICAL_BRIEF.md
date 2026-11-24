@@ -7,7 +7,7 @@
 Vite
 React
 TypeScript
-Tailwind CSS
+Quiet design tokens (plain CSS; Tailwind removed in Nov 2026)
 Luxon
 Vercel
 
