@@ -1,8 +1,8 @@
 # TBridge status
 
-Updated 2026-11-24. The September fixes below are on `main` (commit 4987b04, PR #5) and live. The Quiet restyle (next section) is uncommitted on `main`.
+Updated 2026-11-24. The September fixes below are on `main` (commit 4987b04, PR #5) and live. The Quiet restyle (next section) is on branch `feature/quiet-restyle`, PR https://github.com/noel-q/TBridge/pull/6, not merged.
 
-## Quiet restyle (24 Nov 2026, uncommitted)
+## Quiet restyle (24 Nov 2026, PR #6 open)
 
 Noel asked for TBridge in Quiet, his design system, and approved the mock (private canvas https://claude.ai/artifact/Pu3Cgza4jdCfV2ZangNpDe). Accent: tide (Noel's choice).
 
@@ -56,7 +56,7 @@ None. The domain blocker was cleared on 2026-09-20.
 
 ## Next action
 
-Noel: look at the restyle (`npm run dev`) and say whether to commit it on a branch and open a PR. Pushing to `main` auto-deploys, so it needs your yes.
+Noel: review and merge PR #6 (https://github.com/noel-q/TBridge/pull/6) when CI is green. Merging to `main` auto-deploys to https://tbridge.noel-q.dev.
 
 ## Human-only tail
 
