@@ -1,16 +1,29 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
+import { Info } from '@phosphor-icons/react/dist/csr/Info'
 import { convertTime, getSourceTimeNotice } from '../utils/conversion'
 import { findTimezoneByIana, tzToSelection } from '../data/timezones'
 import { ResultCard } from './ResultCard'
-import type { AppState } from '../types'
+import type { AppState, ConversionResult } from '../types'
 
 type Props = {
   state: AppState
 }
 
+/** Stable keys for rows, so only a newly added city animates in. Repeats get a counter. */
+function rowKeys(results: ConversionResult[]): string[] {
+  const seen = new Map<string, number>()
+  return results.map((result) => {
+    const base = `${result.city}|${result.iana}`
+    const count = seen.get(base) ?? 0
+    seen.set(base, count + 1)
+    return count === 0 ? base : `${base}#${count}`
+  })
+}
+
 export function ResultsList({ state }: Props) {
   const sourceTz = findTimezoneByIana(state.sourceIana)
   const sourceSel = sourceTz ? tzToSelection(sourceTz) : null
+  const initialKeys = useRef<Set<string> | null>(null)
 
   const sourceResult = useMemo(() => {
     if (!sourceSel) return null
@@ -27,36 +40,48 @@ export function ResultsList({ state }: Props) {
     () => convertTime(state.date, state.time, state.sourceIana, state.destSelections, state.is24h),
     [state.date, state.time, state.sourceIana, state.destSelections, state.is24h],
   )
+  const keys = rowKeys(destResults)
+  // Rows present on first render do not animate; later additions do.
+  if (initialKeys.current === null) initialKeys.current = new Set(keys)
 
   if (!sourceSel) {
-    return <p className="empty-state-copy">Please select a valid source timezone.</p>
+    return (
+      <div className="tb-empty" role="status">
+        <p className="tb-empty__title">Pick a time zone to convert from</p>
+        <p className="tb-empty__text">Search by city, abbreviation or offset in the time zone field.</p>
+      </div>
+    )
   }
 
   if (!sourceResult) {
     return (
-      <p className="empty-state-copy" role="status">
-        {notice?.message ?? 'Enter a valid date and time to see the conversion.'}
-      </p>
+      <div className="tb-empty" role="status">
+        <p className="tb-empty__title">Enter a date and time</p>
+        <p className="tb-empty__text">{notice?.message ?? 'Enter a valid date and time to see the conversion.'}</p>
+      </div>
     )
   }
 
   return (
-    <div className="results-list">
+    <>
       {notice && (
-        <p className="time-notice" role="status">
-          {notice.message}
+        <p className="tb-notice" role="status">
+          <Info size={16} aria-hidden="true" />
+          <span>{notice.message}</span>
         </p>
       )}
-      <ResultCard result={sourceResult} isSource />
-      {destResults.map((result, i) => (
-        <ResultCard key={`${result.city}|${result.iana}|${i}`} result={result} />
-      ))}
+      <ul className="tb-results">
+        <ResultCard result={sourceResult} isSource />
+        {destResults.map((result, i) => (
+          <ResultCard key={keys[i]} result={result} enter={!initialKeys.current?.has(keys[i])} />
+        ))}
+      </ul>
       {state.destSelections.length === 0 && (
-        <div className="empty-state">
-          <p className="empty-state-title">No destination cities selected.</p>
-          <p className="empty-state-copy">Search for one or more cities to compare local times.</p>
+        <div className="tb-empty">
+          <p className="tb-empty__title">No cities to compare yet</p>
+          <p className="tb-empty__text">Add a city above to see its local time. Press / to search.</p>
         </div>
       )}
-    </div>
+    </>
   )
 }

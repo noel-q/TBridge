@@ -1,8 +1,9 @@
-import type { ThemeMode, ResolvedTheme } from '../hooks/useTheme'
+import type { ThemeMode } from '../hooks/useTheme'
+import { useShortcuts } from '../hooks/useShortcuts'
+import { Segmented } from './Segmented'
 
 type Props = {
   mode: ThemeMode
-  resolvedTheme: ResolvedTheme
   onChange: (mode: ThemeMode) => void
 }
 
@@ -12,22 +13,13 @@ const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
   { value: 'dark', label: 'Dark' },
 ]
 
-export function ThemeToggle({ mode, resolvedTheme, onChange }: Props) {
-  return (
-    <label className="theme-toggle">
-      <span className="sr-only">Theme</span>
-      <select
-        className="theme-select"
-        value={mode}
-        onChange={(event) => onChange(event.target.value as ThemeMode)}
-        aria-label={`Theme: ${mode}, currently ${resolvedTheme}`}
-      >
-        {THEME_OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  )
+export function nextThemeMode(mode: ThemeMode): ThemeMode {
+  const index = THEME_OPTIONS.findIndex((option) => option.value === mode)
+  return THEME_OPTIONS[(index + 1) % THEME_OPTIONS.length].value
+}
+
+export function ThemeToggle({ mode, onChange }: Props) {
+  useShortcuts({ t: () => onChange(nextThemeMode(mode)) })
+
+  return <Segmented label="Theme" shortcut="T" options={THEME_OPTIONS} value={mode} onChange={onChange} />
 }

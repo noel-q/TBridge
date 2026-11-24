@@ -8,37 +8,39 @@ type Props = {
 
 export function DateTimeInput({ state, onChange }: Props) {
   return (
-    <div className="input-section">
-      <label className="field-label mb-2 block">Convert from</label>
-      <div className="input-grid">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="date-input" className="input-sublabel">Date</label>
+    <section className="tb-section" aria-labelledby="from-heading">
+      <h2 id="from-heading" className="tb-section__title">From</h2>
+      <div className="tb-from">
+        <div className="tb-field">
+          <label htmlFor="date-input" className="tb-field__label">Date</label>
           <input
             id="date-input"
             type="date"
             value={state.date}
             onChange={(e) => onChange({ date: e.target.value })}
-            className="input"
+            className="q-input"
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="time-input" className="input-sublabel">Time</label>
+        <div className="tb-field">
+          <label htmlFor="time-input" className="tb-field__label">Time</label>
           <input
             id="time-input"
             type="time"
             value={state.time}
             onChange={(e) => onChange({ time: e.target.value })}
-            className="input"
+            className="q-input"
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="source-tz" className="input-sublabel">Timezone</label>
+        <div className="tb-field">
+          <label htmlFor="source-tz" className="tb-field__label">Time zone</label>
           <SourceTimezoneCombobox
             value={state.sourceIana}
+            date={state.date}
+            time={state.time}
             onChange={(sourceIana) => onChange({ sourceIana })}
           />
         </div>
       </div>
-    </div>
+    </section>
   )
 }
