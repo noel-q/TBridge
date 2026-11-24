@@ -377,6 +377,38 @@ function parseWallClock(date: string, time: string): WallClock | null {
   return { year: +d[1], month: +d[2], day: +d[3], hour: +t[1], minute: +t[2] }
 }
 
+/**
+ * Every instant whose local wall clock in `zone` reads exactly `wall`, earliest first, using the
+ * offsets in force around that day. One is normal; none is a DST gap; two is a DST overlap.
+ */
+function wallClockInstants(wall: WallClock, zone: string): DateTime[] {
+  const guess = DateTime.fromObject(wall, { zone })
+  if (!guess.isValid) return []
+  const localAsUtc = DateTime.fromObject(wall, { zone: 'utc' }).toMillis()
+  const offsets = new Set([guess.minus({ days: 1 }).offset, guess.offset, guess.plus({ days: 1 }).offset])
+  const found = new Map<number, DateTime>()
+  for (const offset of offsets) {
+    const candidate = DateTime.fromMillis(localAsUtc - offset * 60_000, { zone })
+    if (
+      candidate.year === wall.year && candidate.month === wall.month && candidate.day === wall.day &&
+      candidate.hour === wall.hour && candidate.minute === wall.minute
+    ) {
+      found.set(candidate.toMillis(), candidate)
+    }
+  }
+  return [...found.values()].sort((a, b) => a.toMillis() - b.toMillis())
+}
+
+/**
+ * The moment a wall-clock time in `zone` stands for. In a DST overlap this is always the first
+ * occurrence: Luxon on its own picks the first or the second depending on the zone (it chose the
+ * second for New York and London but the first for Sydney under tzdata 2026a), so it is not
+ * trusted here. In a DST gap Luxon's forward shift is kept.
+ */
+function resolveWallClock(wall: WallClock, zone: string): DateTime {
+  return wallClockInstants(wall, zone)[0] ?? DateTime.fromObject(wall, { zone })
+}
+
 export type SourceTimeNotice = {
   kind: 'invalid' | 'skipped' | 'repeated'
   message: string
@@ -395,34 +427,20 @@ export function getSourceTimeNotice(
   sourceIana: string,
 ): SourceTimeNotice | null {
   const wall = parseWallClock(date, time)
-  const zoned = wall && DateTime.fromObject(wall, { zone: sourceIana })
+  const zoned = wall && resolveWallClock(wall, sourceIana)
   if (!wall || !zoned || !zoned.isValid) {
     return { kind: 'invalid', message: 'Enter a valid date and time to see the conversion.' }
   }
 
-  // Find every instant whose local wall clock equals the requested one, using the
-  // offsets in force around that day. One match is normal; none is a gap; two is an overlap.
-  const localAsUtc = DateTime.fromObject(wall, { zone: 'utc' }).toMillis()
-  const offsets = new Set([zoned.minus({ days: 1 }).offset, zoned.offset, zoned.plus({ days: 1 }).offset])
-  const instants = new Set<number>()
-  for (const offset of offsets) {
-    const candidate = DateTime.fromMillis(localAsUtc - offset * 60_000, { zone: sourceIana })
-    if (
-      candidate.year === wall.year && candidate.month === wall.month && candidate.day === wall.day &&
-      candidate.hour === wall.hour && candidate.minute === wall.minute
-    ) {
-      instants.add(candidate.toMillis())
-    }
-  }
-
+  const instants = wallClockInstants(wall, sourceIana)
   const requested = time.slice(0, 5)
-  if (instants.size === 0) {
+  if (instants.length === 0) {
     return {
       kind: 'skipped',
       message: `${requested} does not exist in ${sourceIana} on ${date} (clocks skip forward). Showing ${zoned.toFormat('HH:mm')} instead.`,
     }
   }
-  if (instants.size > 1) {
+  if (instants.length > 1) {
     return {
       kind: 'repeated',
       message: `${requested} happens twice in ${sourceIana} on ${date} (clocks go back). Showing the first occurrence, ${resolveAbbreviation(zoned, sourceIana)}.`,
@@ -457,7 +475,7 @@ export function convertTime(
   const wall = parseWallClock(date, time)
   if (!wall) return []
 
-  const sourceDateTime = DateTime.fromObject(wall, { zone: sourceIana })
+  const sourceDateTime = resolveWallClock(wall, sourceIana)
 
   if (!sourceDateTime.isValid) return []
 

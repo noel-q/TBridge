@@ -9,7 +9,7 @@ Noel asked for TBridge in Quiet, his design system, and approved the mock (priva
 - Verified: `src/styles/quiet-tokens.css` generated from Quiet `tokens.json` by `tools/gen-quiet-tokens.mjs`; `src/styles/app.css` uses only tokens. Old Qhedroid `tokens.css`/`index.css`, Tailwind and Geist removed; Instrument Sans, JetBrains Mono and Phosphor bundled (no third-party requests).
 - Verified in the browser at 1280 px and 375 px, dark and light: converter, city search with arrow keys and Return, `/`, `⌫`, `H`, `T`, `C`, `S`, Escape, row enter animation, DST notice, signature (README "Signature"). Copy in the test browser shows "Copy failed" because its clipboard is blocked; the success path is unchanged code (inherited).
 - Assumed, not seen: Reduce Motion (CSS only).
-- Tests 157/158, build passes. The one failure (`names the first occurrence for a repeated time`) also fails on a clean copy of HEAD under Node 22.22 / tzdata 2026a: the DST overlap notice says "first occurrence" but shows EST, the second. Pre-existing; not touched.
+- Tests 162/162, build passes. Fixed in the same PR: in a DST overlap (01:30 on 1 Nov in New York) the notice said "first occurrence" but the app showed the second, because Luxon picks either depending on the zone. Conversion and notice now share one helper that always takes the first occurrence; new tests cover New York, London and Sydney. This test had started failing in CI on `main` too.
 - `npm audit` reports 4 vulnerabilities in vite (new advisory since September); not fixed here.
 - `og-image.png` is still the old teal design.
 
